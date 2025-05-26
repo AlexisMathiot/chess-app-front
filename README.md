@@ -56,4 +56,4 @@ npm run dev
 | `npm run lint`    | Analyse le code avec ESLint         |
 
 ## 🙋‍♂️ Auteur
-Développé par Ton Alexis
+Développé par Alexis
