@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ChevronRight as ChessKnight } from 'lucide-react';
@@ -11,14 +11,14 @@ function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
-  
+
   const password = watch("password");
 
   const onSubmit = async (data) => {
     try {
       setError(null);
       setIsLoading(true);
-      await registerUser(data.username, data.email, data.password);
+      await registerUser(data);
       navigate('/dashboard');
     } catch (err) {
       setError('Registration failed. Please try again.');
@@ -55,7 +55,7 @@ function RegisterPage() {
               </div>
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -66,10 +66,9 @@ function RegisterPage() {
                   id="username"
                   type="text"
                   autoComplete="username"
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.username ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
-                  {...register('username', { 
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.username ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                  {...register('username', {
                     required: 'Username is required',
                     minLength: {
                       value: 3,
@@ -92,10 +91,9 @@ function RegisterPage() {
                   id="email"
                   type="email"
                   autoComplete="email"
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
-                  {...register('email', { 
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                  {...register('email', {
                     required: 'Email is required',
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -118,10 +116,9 @@ function RegisterPage() {
                   id="password"
                   type="password"
                   autoComplete="new-password"
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
-                  {...register('password', { 
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                  {...register('password', {
                     required: 'Password is required',
                     minLength: {
                       value: 6,
@@ -143,10 +140,9 @@ function RegisterPage() {
                 <input
                   id="confirmPassword"
                   type="password"
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
-                  {...register('confirmPassword', { 
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                  {...register('confirmPassword', {
                     required: 'Please confirm your password',
                     validate: value => value === password || "Passwords do not match"
                   })}

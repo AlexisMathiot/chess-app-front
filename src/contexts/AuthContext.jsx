@@ -1,107 +1,81 @@
+// contexts/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-// Mock authentication - replace with actual implementation
-const MOCK_USER = {
-  id: '1',
-  username: 'chessmaster',
-  email: 'chess@example.com'
-};
+import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error('useAuth doit être utilisé dans un AuthProvider');
   }
   return context;
 };
 
-export function AuthProvider({ children }) {
-  const [authState, setAuthState] = useState({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true
-  });
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setAuthState({
-        user: JSON.parse(storedUser),
-        isAuthenticated: true,
-        isLoading: false
-      });
-    } else {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-    }
+    checkAuthStatus();
   }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      if (authService.isAuthenticated()) {
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'authentification:', error);
+      authService.logout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email, password) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // In a real app, you would validate credentials with a backend
-      if (email && password) {
-        localStorage.setItem('user', JSON.stringify(MOCK_USER));
-        setAuthState({
-          user: MOCK_USER,
-          isAuthenticated: true,
-          isLoading: false
-        });
-      } else {
-        throw new Error('Invalid credentials');
-      }
+      const response = await authService.login(email, password);
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      setIsAuthenticated(true);
+      return response;
     } catch (error) {
-      console.error('Login failed:', error);
       throw error;
     }
   };
 
-  const register = async (username, email, password) => {
+  const register = async (userData) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // In a real app, you would send registration data to backend
-      if (username && email && password) {
-        const newUser = { ...MOCK_USER, username, email };
-        localStorage.setItem('user', JSON.stringify(newUser));
-        setAuthState({
-          user: newUser,
-          isAuthenticated: true,
-          isLoading: false
-        });
-      } else {
-        throw new Error('Missing required fields');
-      }
+      const response = await authService.register(userData);
+      return response;
     } catch (error) {
-      console.error('Registration failed:', error);
       throw error;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false
-    });
+    authService.logout();
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const value = {
+    user,
+    isAuthenticated,
+    loading,
+    login,
+    register,
+    logout,
+    checkAuthStatus
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        ...authState,
-        login,
-        register,
-        logout
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
