@@ -6,43 +6,9 @@ import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../contexts/AuthContext';
 
-// Mock data for demonstration
-const MOCK_GAMES = [
-  {
-    id: '1',
-    source: 'chess.com',
-    white: 'GrandMaster123',
-    black: 'chessmaster',
-    date: '2023-09-15',
-    result: '1-0',
-    pgn: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7',
-    timeControl: '10+0'
-  },
-  {
-    id: '2',
-    source: 'lichess',
-    white: 'chessmaster',
-    black: 'QuickMate',
-    date: '2023-09-10',
-    result: '1/2-1/2',
-    pgn: '1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 O-O 5. Bd3 d5',
-    timeControl: '5+3'
-  },
-  {
-    id: '3',
-    source: 'chess.com',
-    white: 'chessmaster',
-    black: 'KingSlayer',
-    date: '2023-09-05',
-    result: '0-1',
-    pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6',
-    timeControl: '15+10'
-  }
-];
-
 const DashboardPage = () => {
   const { user } = useAuth();
-  const [games, setGames] = useState(MOCK_GAMES);
+  const [games, setGames] = useState([]);
   const [isImporting, setIsImporting] = useState(false);
   const [importUsername, setImportUsername] = useState('');
   const [importSource, setImportSource] = useState('chess.com');

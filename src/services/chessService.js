@@ -58,31 +58,79 @@ export const getGameResult = (chess) => {
 };
 
 // Mock function to fetch games from platforms (in a real app, this would call an API)
-export const fetchGames = async (platform, username) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock data - in a real app, this would be real data from the API
-  return [
-    {
-      id: `${Date.now()}-1`,
-      source: platform,
-      white: username,
-      black: 'Opponent1',
-      date: new Date().toISOString().split('T')[0],
-      result: '1-0',
-      pgn: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7',
-      timeControl: '10+0'
-    },
-    {
-      id: `${Date.now()}-2`,
-      source: platform,
-      white: 'Opponent2',
-      black: username,
-      date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      result: '0-1',
-      pgn: '1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 O-O 5. Bd3 d5',
-      timeControl: '5+3'
+// services/chessService.js
+import axios from 'axios';
+
+const CHESS_COM_API = 'https://api.chess.com/pub';
+
+export const chessService = {
+  // Récupérer le profil d'un joueur
+  async getPlayerProfile(username) {
+    try {
+      const response = await axios.get(`${CHESS_COM_API}/player/${username}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération du profil: ${error.message}`);
     }
-  ];
+  },
+
+  // Récupérer les parties d'un mois spécifique
+  async getPlayerGames(username, year, month) {
+    try {
+      const response = await axios.get(`${CHESS_COM_API}/player/${username}/games/${year}/${month.toString().padStart(2, '0')}`);
+      return response.data.games || [];
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération des parties: ${error.message}`);
+    }
+  },
+
+  // Récupérer les parties récentes (plusieurs mois)
+  async getRecentGames(username, monthsBack = 3) {
+    const games = [];
+    const currentDate = new Date();
+
+    for (let i = 0; i < monthsBack; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+
+      try {
+        const monthGames = await this.getPlayerGames(username, year, month);
+        games.push(...monthGames);
+      } catch (error) {
+        console.warn(`Impossible de récupérer les parties de ${year}/${month}:`, error.message);
+      }
+    }
+
+    return games.sort((a, b) => b.end_time - a.end_time); // Tri par date décroissante
+  },
+
+  // Récupérer les stats d'un joueur
+  async getPlayerStats(username) {
+    try {
+      const response = await axios.get(`${CHESS_COM_API}/player/${username}/stats`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération des stats: ${error.message}`);
+    }
+  },
+
+  // Analyser une partie (convertir PGN en format analysable)
+  parseGame(game) {
+    return {
+      id: game.uuid,
+      white: game.white.username,
+      black: game.black.username,
+      whiteRating: game.white.rating,
+      blackRating: game.black.rating,
+      result: game.white.result, // 'win', 'checkmated', 'agreed', etc.
+      timeControl: game.time_control,
+      timeClass: game.time_class, // 'rapid', 'blitz', 'bullet', etc.
+      pgn: game.pgn,
+      url: game.url,
+      startTime: new Date(game.start_time * 1000),
+      endTime: new Date(game.end_time * 1000),
+      rules: game.rules // 'chess', 'bughouse', etc.
+    };
+  }
 };
